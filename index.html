@@ -1,0 +1,24 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Main</title>
+
+  <link rel="stylesheet" href="node_modules/codemirror/lib/codemirror.css">
+  <link rel="stylesheet" href="node_modules/codemirror/theme/monokai.css">
+</head>
+
+<body>
+<!-- The Codemirror imports we need -->
+<script type="module" src="codemirror.js"></script>
+<script src="main.js"></script>
+
+<div id="elm"></div>
+<script>
+  var app = Elm.Main.init({
+    node: document.getElementById('elm'),
+    flags: null
+
+  });
+</script>
+</body>
+</html>
