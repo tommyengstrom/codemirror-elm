@@ -1,6 +1,6 @@
-# Simple example of how to use CodeMirror as a custom element in Elm
+# CodeMirror in Elm
 
-Mostly taken from: https://www.youtube.com/watch?v=tyFe9Pw6TVE
+This is a short example of how to use CodeMirror as a custom component in Elm. Mostly taken from: https://www.youtube.com/watch?v=tyFe9Pw6TVE
 
 ## Try it
 
