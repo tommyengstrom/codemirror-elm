@@ -5,6 +5,7 @@ import Html exposing (Html, text)
 import Html.Attributes as Attr
 import Html.Events
 import Json.Decode as D
+import Time
 
 
 main : Program D.Value Model Msg
@@ -51,13 +52,13 @@ keyMapToString m =
         Emacs -> "emacs"
 
 
-codemirror : Mode -> KeyMap -> Theme -> Html Msg
-codemirror mode km theme =
+codemirror : Mode -> KeyMap -> Theme -> String -> Html Msg
+codemirror mode km theme content =
     Html.node "code-mirror"
         [ Attr.attribute "mode" <| modeToString mode
         , Attr.attribute "keymap" <| keyMapToString km
         , Attr.attribute "theme" <| themeToString theme
-        , Attr.attribute "editorValue" "module Main where\n"
+        , Attr.attribute "editorValue" content
         , Html.Events.on "editorChanged" <|
             D.map EditorChanged <|
                 D.at [ "target", "editorValue" ] <|
@@ -66,13 +67,26 @@ codemirror mode km theme =
         []
 
 
+type AutoSaved a
+    = Saved a
+    | Unsaved a
+
+
+unAutoSaved : AutoSaved a -> a
+unAutoSaved x =
+    case x of
+        Saved a -> a
+        Unsaved a -> a
+
+
 type alias Model =
-    { currentTime : Int }
+    { editorValue : AutoSaved String
+    }
 
 
 init : D.Value -> ( Model, Cmd Msg )
 init _ =
-    ( { currentTime = 1 }
+    ( { editorValue = Unsaved "# Such headline\n" }
     , Cmd.none
     )
 
@@ -80,21 +94,38 @@ init _ =
 type Msg
     = NoOp
     | EditorChanged String
-    | EditorSave String
+    | SaveChanges
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
+update msg m =
+    case msg of
+        NoOp ->
+            ( m, Cmd.none )
+
+        EditorChanged v ->
+            if unAutoSaved m.editorValue /= v then
+                ( { m | editorValue = Unsaved v }, Cmd.none )
+
+            else
+                ( m, Cmd.none )
+
+        SaveChanges ->
+            case m.editorValue of
+                Saved _ -> ( m, Cmd.none )
+                Unsaved v -> ( { m | editorValue = Saved v }, Cmd.none )
 
 
 view : Model -> Html Msg
-view model =
+view m =
     Html.div []
-        [ codemirror Markdown Vim Monokai
+        [ case m.editorValue of
+            Unsaved _ -> text "Unsaved"
+            Saved _ -> text "✔ Saved"
+        , codemirror Markdown Vim Monokai (unAutoSaved m.editorValue)
         ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Time.every 5000 (always SaveChanges)

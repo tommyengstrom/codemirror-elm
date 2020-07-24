@@ -33,7 +33,6 @@ customElements.define('code-mirror',
       this._editorValue = this.getAttribute('editorValue');
 
       const editorElem = document.createElement("editor");
-      this.textContent = CodeMirror(editorElem)
     }
 
     get editorValue() {
